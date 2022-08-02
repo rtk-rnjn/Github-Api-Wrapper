@@ -52,12 +52,14 @@ class GHClient:
     def check_limits(self, as_dict: bool = False) -> dict[str, str | int] | list[str]:
         if not self.has_started:
             raise exceptions.NotStarted
-        if not as_dict:
-            output = []
-            for key, value in self.http.session._rates._asdict().items():
-                output.append(f'{key} : {value}')
-            return output
-        return self.http.session._rates
+        return (
+            self.http.session._rates
+            if as_dict
+            else [
+                f'{key} : {value}'
+                for key, value in self.http.session._rates._asdict().items()
+            ]
+        )
 
     async def update_auth(self, username: str, token: str) -> None:
         """Allows you to input auth information after instantiating the client."""
@@ -91,18 +93,18 @@ class GHClient:
                 if target_type == 'User':
                     if (obj := self._user_cache.get(kwargs.get('user'))):
                         return obj
-                    else:
-                        res = await func(self, *args, **kwargs)
-                        self._user_cache[kwargs.get('user')] = res
-                        return res
+                    res = await func(self, *args, **kwargs)
+                    self._user_cache[kwargs.get('user')] = res
+                    return res
                 if target_type == 'Repo':
                     if (obj := self._repo_cache.get(kwargs.get('repo'))):
                         return obj
-                    else:
-                        res = await func(self, *args, **kwargs)
-                        self._repo_cache[kwargs.get('repo')] = res
-                        return res
+                    res = await func(self, *args, **kwargs)
+                    self._repo_cache[kwargs.get('repo')] = res
+                    return res
+
             return wrapped
+
         return wrapper
 
     #@_cache(type='User')

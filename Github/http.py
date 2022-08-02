@@ -256,10 +256,7 @@ class http:
         description: str = 'Default description',
         public: bool = False
     ) -> GithubGistData:
-        data = {}
-        data['description'] = description
-        data['public'] = public
-        data['files'] = {}
+        data = {'description': description, 'public': public, 'files': {}}
         for file in files:
             data['files'][file.filename] = {
                 'filename' : file.filename, # helps editing the file
@@ -268,7 +265,7 @@ class http:
         data = json.dumps(data)
         _headers = dict(self.session.headers)
         result = await self.session.post(CREATE_GIST_URL, data=data, headers=_headers|{'Accept': 'application/vnd.github.v3+json'})
-        if 201 == result.status:
+        if result.status == 201:
             return await result.json()
         raise InvalidToken
 
